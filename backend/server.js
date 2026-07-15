@@ -25,16 +25,18 @@ const allowedOrigins = (process.env.CLIENT_URLS || 'http://localhost:5173,https:
 
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log("Origin:", origin);
+    console.log("Allowed:", allowedOrigins);
+
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
 
+    console.log("Blocked!");
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true
+};
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json());

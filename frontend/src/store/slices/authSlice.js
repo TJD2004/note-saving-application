@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { Import } from 'lucide-react';
 
-const API_URL = 'https://note-saver-backend.onrender.com/api/auth';
-// const API_URL = 'http://localhost:5000/api/auth';
-
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const API_URL = `${BASE_URL}/api/auth`;
 // Register user
 export const register = createAsyncThunk(
   'auth/register',

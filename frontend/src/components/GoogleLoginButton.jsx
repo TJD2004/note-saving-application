@@ -10,6 +10,7 @@ import { googlestate, isloadingSet, register } from '../store/slices/authSlice';
 const GoogleLoginButton = () => {
 
   const dispatch = useDispatch()
+  
 //   const { register, login } = useAuth();
   const navigate = useNavigate();
 
@@ -54,14 +55,18 @@ const GoogleLoginButton = () => {
 
         try{
             dispatch(isloadingSet(true))
-            const res_data = await axios.post("https://note-saver-backend.onrender.com/api/auth/google-login-api",{
-               email:res.data.email,
+            // const res_data = await axios.post("https://note-saver-backend.onrender.com/api/auth/google-login-api",{
+            //    email:res.data.email,
+            //    name:res.data.family_name,
+            //    password:"same123.456"
+            // })
+              dispatch(registerAndLogin({
+              // user:res_data.user,
+
+              // token:res_data.token
+                 email:res.data.email,
                name:res.data.family_name,
                password:"same123.456"
-            })
-              dispatch(googlestate({
-              user:res_data.user,
-              token:res_data.token
             }))
         }catch(err){
           dispatch(isloadingSet(false))

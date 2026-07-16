@@ -61,9 +61,9 @@ const GoogleLoginButton = () => {
             //    password:"same123.456"
             // })
               dispatch(registerAndLogin({
-              // user:res_data.user,
+              user:res_data.user,
 
-              // token:res_data.token
+              token:res_data.token,
                  email:res.data.email,
                name:res.data.family_name,
                password:"same123.456"

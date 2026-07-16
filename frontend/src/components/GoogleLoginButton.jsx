@@ -1,14 +1,11 @@
-import React from "react";
 import axios from "axios";
+import React from "react";
 import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
-import { googlestate, isloadingSet } from "../store/slices/authSlice";
-
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-const API_URL = `${BASE_URL}`;
+import { registerAndLogin, isloadingSet } from "../store/slices/authSlice";
 
 const GoogleLoginButton = () => {
   const dispatch = useDispatch();
@@ -18,7 +15,7 @@ const GoogleLoginButton = () => {
     try {
       dispatch(isloadingSet(true));
 
-      // Get Google user information
+      // Get Google user details
       const { data } = await axios.get(
         "https://www.googleapis.com/oauth2/v1/userinfo",
         {
@@ -31,27 +28,18 @@ const GoogleLoginButton = () => {
 
       console.log("Google User:", data);
 
-      // Send Google access token to your backend
-      const response = await axios.post(
-        `${API_URL}/api/auth/google-login`,
-        {
-          accessToken: googleUser.access_token,
-        }
-      );
-
-      dispatch(
-        googlestate({
-          user: response.data.user,
-          token: response.data.token,
+      // Register if new user, otherwise login
+      await dispatch(
+        registerAndLogin({
+          name: data.name,
+          email: data.email,
+          password: `google_${data.id}`,
         })
-      );
+      ).unwrap();
 
       navigate("/");
-    } catch (error) {
-      console.error(
-        "Google Login Error:",
-        error.response?.data || error.message
-      );
+    } catch (err) {
+      console.error("Google Login Error:", err);
     } finally {
       dispatch(isloadingSet(false));
     }
@@ -59,11 +47,10 @@ const GoogleLoginButton = () => {
 
   const loginUsingGoogle = useGoogleLogin({
     onSuccess: (tokenResponse) => {
-      console.log(tokenResponse);
       checkGoogleAuthentication(tokenResponse);
     },
     onError: (error) => {
-      console.error("Google Login Failed:", error);
+      console.log("Login Failed:", error);
     },
   });
 

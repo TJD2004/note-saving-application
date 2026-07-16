@@ -1,89 +1,67 @@
-import axios from 'axios';
-import React from 'react';
-import { FaGoogle } from 'react-icons/fa';
+import React from "react";
+import axios from "axios";
+import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
-// import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { googlestate, isloadingSet, register } from '../store/slices/authSlice';
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import { googlestate, isloadingSet } from "../store/slices/authSlice";
 
 const GoogleLoginButton = () => {
-
-  const dispatch = useDispatch()
-  
-//   const { register, login } = useAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const checkGoogleAuthentication = (user) => {
-    // console.log(user);
-    if (user) {
-      axios.get(
-        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
+  const checkGoogleAuthentication = async (googleUser) => {
+    try {
+      dispatch(isloadingSet(true));
+
+      // Get Google user information
+      const { data } = await axios.get(
+        "https://www.googleapis.com/oauth2/v1/userinfo",
         {
           headers: {
-            Authorization: `Bearer ${user.access_token}`,
+            Authorization: `Bearer ${googleUser.access_token}`,
             Accept: "application/json",
           },
         }
-      ).then(async (res) => {
-    
+      );
 
-        // try{
-        //     const res_data = await axios.post("https://note-saver-backend.onrender.com/api/auth/register",{
-        //       email:res.data.email,
-        //       name:res.data.family_name,
-        //       password:"same123.456"
-        //     })
-        //     dispatch(googlestate({
-        //       user:res_data.user,
-        //       token:res_data.token
-        //     }))
-        // }catch(err){
-        
-        //   if(err.response.status==400){
-        //     const response_data =  await axios.post("https://note-saver-backend.onrender.com/api/auth/login",{
-        //       email:res.data.email,
-        //       // name:res.data.family_name,
-        //       password:"same123.456"
-        //     })
-        //      dispatch(googlestate({
-        //       user:response_data.user,
-        //       token:response_data.token
-        //     }))
-        //   }
-        // }
+      console.log("Google User:", data);
 
-        try{
-            dispatch(isloadingSet(true))
-            // const res_data = await axios.post("https://note-saver-backend.onrender.com/api/auth/google-login-api",{
-            //    email:res.data.email,
-            //    name:res.data.family_name,
-            //    password:"same123.456"
-            // })
-              dispatch(registerAndLogin({
-              user:res_data.user,
-
-              token:res_data.token,
-                 email:res.data.email,
-               name:res.data.family_name,
-               password:"same123.456"
-            }))
-        }catch(err){
-          dispatch(isloadingSet(false))
-          console.log(err)
+      // Send Google access token to your backend
+      const response = await axios.post(
+        "https://note-saver-backend.onrender.com/api/auth/google-login",
+        {
+          accessToken: googleUser.access_token,
         }
+      );
 
-      });
+      dispatch(
+        googlestate({
+          user: response.data.user,
+          token: response.data.token,
+        })
+      );
+
+      navigate("/");
+    } catch (error) {
+      console.error(
+        "Google Login Error:",
+        error.response?.data || error.message
+      );
+    } finally {
+      dispatch(isloadingSet(false));
     }
   };
 
   const loginUsingGoogle = useGoogleLogin({
-    onSuccess: (codeResponse) => {
-      const user = codeResponse;
-      // console.log(user);
-      checkGoogleAuthentication(user);
+    onSuccess: (tokenResponse) => {
+      console.log(tokenResponse);
+      checkGoogleAuthentication(tokenResponse);
     },
-    onError: (error) => console.log("Login Failed:", error),
+    onError: (error) => {
+      console.error("Google Login Failed:", error);
+    },
   });
 
   return (

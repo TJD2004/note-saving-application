@@ -7,6 +7,9 @@ import { useDispatch } from "react-redux";
 
 import { googlestate, isloadingSet } from "../store/slices/authSlice";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const API_URL = `${BASE_URL}`;
+
 const GoogleLoginButton = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -30,7 +33,7 @@ const GoogleLoginButton = () => {
 
       // Send Google access token to your backend
       const response = await axios.post(
-        "https://note-saver-backend.onrender.com/api/auth/google-login",
+        `${API_URL}/api/auth/google-login`,
         {
           accessToken: googleUser.access_token,
         }
